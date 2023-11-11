@@ -17,7 +17,7 @@
     /* Bundled projects */
     "lib": ["dom", "dom.iterable", "ES2022"],
     "noEmit": true,
-    "module": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "Bundler",
     "jsx": "preserve",
     "plugins": [{ "name": "next" }],

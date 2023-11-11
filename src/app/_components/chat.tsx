@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react';
-import { FaTimes, FaPaperPlane } from 'react-icons/fa';
+import React, { useState } from "react";
+import { FaTimes, FaPaperPlane } from "react-icons/fa";
 
 interface ChatProps {
     onClose: () => void;
 }
 
 const Chat: React.FC<ChatProps> = ({ onClose }) => {
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState("");
 
     const handleSendMessage = () => {
         // Handle sending the message
         console.log(message);
-        setMessage(''); // Clear the input after sending
+        setMessage(""); // Clear the input after sending
     };
 
     return (
@@ -21,6 +21,7 @@ const Chat: React.FC<ChatProps> = ({ onClose }) => {
             <div className="mb-4">
                 <h2 className="text-lg font-semibold">ChatBot</h2>
                 <button
+                    type="button"
                     className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
                     onClick={onClose}
                 >
@@ -43,6 +44,7 @@ const Chat: React.FC<ChatProps> = ({ onClose }) => {
                     placeholder="Type your message..."
                 />
                 <button
+                    type="button"
                     className="bg-primary h-full  hover:bg-primary/70 text-white py-2 px-4 rounded-r-md"
                     onClick={handleSendMessage}
                 >
