@@ -1,54 +1,59 @@
-import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
-import OpenAI from "openai-api";
+import OpenAI from 'openai';
+import { createTRPCRouter, publicProcedure } from '../trpc';
+import { z } from 'zod';
+import { searchData } from '~/lib/search';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? "";
-
-const openai = new OpenAI(OPENAI_API_KEY);
-interface SteelPrice {
-    type: string;
-    price: number;
+// Define the types for news entries and the summary response
+interface NewsEntry {
+  source: string;
+  headline: string;
 }
 
-// Function to get steel prices
-const getSteelPrices = async (): Promise<string> => {
-    try {
-        const prompt =
-            "Provide the current prices for the following types of steel: 1. Carbon Steel, 2. Alloy Steel, 3. Stainless Steel, 4. Tool Steel.";
-        const response = await openai.complete({
-            engine: "davinci",
-            prompt: prompt,
-            maxTokens: 100,
-        });
 
-        return response?.data?.choices[0]?.text.trim() ?? "";
-    } catch (error) {
-        console.error("Error in fetching steel prices:", error);
-        throw error;
-    }
+
+// The main function to fetch and summarize news
+const newsDashboardFunction = async (
+  userQuery: string,
+  currentDate: string,
+  newsHeadlines: NewsEntry[]
+): Promise<string> => {
+  // Initialize OpenAI with your API key
+  const openai = new OpenAI({apiKey:process.env.OPENAI_API_KEY });
+
+  // Generate the prompt
+  let prompt = `These are the latest news headlines regarding '${userQuery}' on ${currentDate}. Give me a brief 1 paragraph summary for '${userQuery}'.\n\n`;
+  newsHeadlines.forEach(entry => {
+    prompt += `${entry.source}: ${entry.headline}\n`;
+  });
+  
+  // Call OpenAI API
+  try {
+    const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [{role:"assistant", "content":prompt}],
+        max_tokens: 100
+    });
+    
+    const summary = response?.choices[0]?.message.content?.trim();
+    return summary ?? ""
+  } catch (error) {
+    console.error('Error fetching data from OpenAI:', error);
+    throw error
+  }
 };
-export const fetchAndFormatSteelPrices = async (): Promise<SteelPrice[]> => {
-    const steelPriceText = await getSteelPrices();
-    const steelPrices: SteelPrice[] = [];
 
-    // Parsing the returned text and extracting the prices
-    // Example text format: "1. Carbon Steel: $500 per ton, 2. Alloy Steel: $700 per ton..."
-    const priceRegex = /(\w+ Steel): \$(\d+) per ton/g;
-    let match: RegExpExecArray | null;
 
-    while (true) {
-        match = priceRegex.exec(steelPriceText);
-        if (match === null) break;
-
-        steelPrices.push({
-            type: match[1] ?? "",
-            price: parseFloat(match[2] ?? ""),
-        });
-    }
-    return steelPrices;
-};
 
 export const predictionRouter = createTRPCRouter({
+    getNews: publicProcedure
+        .input(z.object({ question: z.string() }))
+        .mutation(async ({ input }) => {
+            const data= await searchData("site:news.google.com " + input.question)
+            console.log(data)
+            const today = new Date()
+            const summary = await newsDashboardFunction(input.question, today.toDateString(), data.items.map(result=>({source:result.formattedUrl, headline:result.title})))
+            return {summary, sources: data.items.map(result=>(result.formattedUrl))}
+          }),
     getPrediction: publicProcedure
         .input(z.object({ question: z.string() }))
         .mutation(async ({ input }) => {

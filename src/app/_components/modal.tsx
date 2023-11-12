@@ -9,10 +9,12 @@ interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ({ children, isOpen, onClose }) => {
     if (!isOpen) return null;
-
+    const handleContentClick = (event: React.MouseEvent) => {
+        event.stopPropagation(); // Prevent click from propagating to parent elements
+    };
     return ReactDOM.createPortal(
         <div onClick={()=>onClose()} className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div onClick={handleContentClick} className="bg-white relative z-50 p-6 rounded-lg shadow">
                 {children}
             </div>
         </div>,

@@ -1,19 +1,31 @@
-import { ChartType } from "@prisma/client";
+import { type ChartType } from "@prisma/client";
 import { createTRPCRouter, publicProcedure } from "../trpc";
+import { z } from "zod";
 
 export const widgetRouters = createTRPCRouter({
-    getAll: publicProcedure.query(async ({ctx})=>{
-        return ctx.db.widget.findMany({include:{data:true}})
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.widget.findMany({ include: { data: true, sources:true } });
+  }),
+  create: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        chartType: z.string(),
+        sources: z.array(z.string()).optional()
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.widget.create({
+        data: {
+          name: input.name,
+          description: input.description,
+          chartType: input.chartType as ChartType,
+          sources: {createMany:{
+            data: input.sources?.map(source=>({name:source, url:source})) ?? []
+          }}
+        },
+        include: { data: true, sources:true },
+      });
     }),
-    create: publicProcedure.mutation(async ({ctx})=>{
-        return ctx.db.widget.create({
-            data: {
-                name: "Test chart",
-                data:{create:[{name: "Copper", value: "2000"}, {name: "Iron", value: "3000"}]} ,
-                chartType: ChartType.LINE,
-            },
-            include:{data:true}
-        })
-    })
-
-})
+});
