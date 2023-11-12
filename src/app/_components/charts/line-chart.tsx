@@ -1,27 +1,25 @@
-'use client'
 import { LineChart as LineChartComponent, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export interface Props {
     data: {
         name: string;
-        uv: number;
-        pv: number;
-        amt: number;
+        value: number;
     }[],
 }
 
 export default function LineChart({ data }: Props) {
     return (
-        <ResponsiveContainer width="100%" minHeight={"300px"} height="100%">
-                 <LineChartComponent data={data}>
-                    <Line type="monotone" dataKey="uv" stroke="#8884d8" strokeWidth={2} activeDot={{ r: 8 }} />
-                    <Line type="monotone" dataKey="pv" stroke="#82ca9d" />
-                    <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
+        <div>
+            <ResponsiveContainer width="100%" minHeight={"300px"} height="100%">
+                <LineChartComponent data={data}>
+                    <Line type="monotone" dataKey="value" stroke="#83a6ed" strokeWidth={2} activeDot={{ r: 8 }} />
+                    <CartesianGrid stroke="#dee2e6" strokeDasharray="3 3" />
+                    <XAxis dataKey="name" tick={{ fontSize: 14 }} />
+                    <YAxis tick={{ fontSize: 14 }} />
+                    <Tooltip cursor={{ stroke: 'grey', strokeWidth: 2 }} />
+                    <Legend verticalAlign="top" height={36}/>
                 </LineChartComponent>
-        </ResponsiveContainer>
+            </ResponsiveContainer>
+        </div>
     );
 }

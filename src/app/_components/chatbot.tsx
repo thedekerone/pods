@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react';
-import { FaComment, FaComments, FaTimes } from 'react-icons/fa';
 import Chat from './chat';
+import Image from 'next/image';
 
 const Chatbot: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -12,10 +12,11 @@ const Chatbot: React.FC = () => {
                 <Chat onClose={() => setIsOpen(false)} />
             )}
             <button
-                className="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded"
+                type="button"
+                className="bg-white  p-2 hover:shadow-md hover:shadow-gray-300 rounded"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                {isOpen ? <FaTimes /> : <FaComments />}
+              <Image width="50" height="50" src='/chatbot-icon.svg' alt="bot icon"/> 
 
             </button>
         </div>

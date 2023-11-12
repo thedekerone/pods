@@ -3,67 +3,40 @@ import { PrismaClient, ChartType } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-    // Seed Widgets Data
+    // Sample widget data
     const widgetData = [
-        {
-            name: 'Market Trends',
-            description: 'Bar chart showing market trends over time',
-            chartType: ChartType.BAR,
-            data: {
-                categories: ['2021', '2022', '2023'],
-                series: [{ name: 'Sales', data: [100, 200, 300] }]
-            }
-        },
-        {
-            name: 'User Growth',
-            description: 'Line chart representing user growth per month',
-            chartType: ChartType.LINE,
-            data: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr'],
-                series: [{ name: 'Users', data: [1000, 1500, 1800, 2000] }]
-            }
-        },
-        {
-            name: 'Product Distribution',
-            description: 'Pie chart showing product distribution in different regions',
-            chartType: ChartType.PIE,
-            data: {
-                labels: ['North America', 'Europe', 'Asia'],
-                values: [40, 30, 30]
-            }
+        { name: "Page A", value: "4000" },
+        { name: "Page B", value: "3000" },
+        { name: "Page C", value: "3500" },
+        { name: "Page D", value: "3700" },
+    ];
+
+    // Create a new Widget
+    const widget = await prisma.widget.create({
+        data: {
+            name: 'Sample Widget',
+            description: 'A sample widget with chart data.',
+            chartType: ChartType.BAR, // Replace with actual value from ChartType enum
+            // sources: [...] Add connected sources here if required
         }
-    ];
+    });
 
-    // Create Widgets and collect their IDs
-    const widgetIds = [];
-    for (const widget of widgetData) {
-        const createdWidget = await prisma.widget.create({ data: widget });
-        widgetIds.push(createdWidget.id);
-    }
-
-    // Seed Sources Data with reference to the created Widgets
-    const sourcesData = [
-        { name: 'Financial Times', url: 'https://www.ft.com', widgetId: widgetIds[0] },
-        { name: 'Data World', url: 'https://data.world', widgetId: widgetIds[1] },
-        { name: 'Statista', url: 'https://www.statista.com', widgetId: widgetIds[2] }
-    ];
-
-    // Seeding process for Sources
-    for (const source of sourcesData) {
-        await prisma.sources.createMany({
+    // Create WidgetData instances associated with the created widget
+    for (const dataItem of widgetData) {
+        await prisma.widgetData.create({
             data: {
-                name: source.name,
-                url: source.url,
-                widgetId: source.widgetId!
-            }
+                name: dataItem.name,
+                value: dataItem.value,
+                widgetId: widget.id, // Linking to the widget
+            },
         });
     }
-    await prisma.$disconnect();
 
+    console.log(`Created widget with id: ${widget.id}`);
+    await prisma.$disconnect();
 }
 
 main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
+    .catch(e => {
+        throw e;
     })
